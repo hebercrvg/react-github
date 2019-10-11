@@ -44,9 +44,36 @@ export const Loading = styled.div`
   }
 `;
 
+export const PageButtons = styled.div`
+  button {
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border: 0;
+    border-radius: 5px;
+    background-color: #7159c1;
+    & + button {
+      margin-left: 3px;
+    }
+    svg {
+      color: #eee;
+      text-align: center;
+    }
+  }
+`;
+
 export const IssueList = styled.ul`
   list-style: none;
   margin-top: 23px;
+  select {
+    border: 0;
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #7159c1;
+    color: #eee;
+    font-size: 14px;
+  }
+
   img {
     width: 40px;
     border-radius: 50%;

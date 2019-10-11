@@ -15,6 +15,7 @@ export default class Main extends Component {
       newRepo: '',
       repositories: [],
       loading: false,
+      error: false,
     };
     this.MySwal = withReactContent(Swal);
   }
@@ -28,9 +29,12 @@ export default class Main extends Component {
     }
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(_, prevState) {
     const { repositories } = this.state;
-    localStorage.setItem('repositories', JSON.stringify(repositories));
+
+    if (prevState.repositories !== repositories) {
+      localStorage.setItem('repositories', JSON.stringify(repositories));
+    }
   }
 
   handleSubmit = async e => {
@@ -38,24 +42,29 @@ export default class Main extends Component {
     try {
       const { newRepo, repositories } = this.state;
       this.setState({ loading: true });
+      const hasRepo = repositories.find(r => r.name === newRepo);
+
+      if (hasRepo) {
+        this.setState({ error: true });
+        return;
+      }
+
       const response = await api.get(`/repos/${newRepo}`);
+      const repoSearched = { name: response.data.full_name };
       this.setState({
-        repositories: [
-          ...repositories,
-          {
-            name: response.data.full_name,
-          },
-        ],
+        repositories: [...repositories, repoSearched],
         newRepo: '',
-        loading: false,
+        error: false,
       });
     } catch {
-      this.setState({ loading: false, newRepo: '' });
+      this.setState({ newRepo: '', error: true });
       this.MySwal.fire({
         title: 'Ops...',
         type: 'warning',
         text: `Repositório não encontrado. Verifique o nome informado.`,
       });
+    } finally {
+      this.setState({ loading: false, newRepo: '' });
     }
   };
 
@@ -73,8 +82,7 @@ export default class Main extends Component {
   };
 
   render() {
-    const { newRepo, loading, repositories } = this.state;
-
+    const { newRepo, loading, repositories, error } = this.state;
     return (
       <Container>
         <h1>
@@ -84,7 +92,7 @@ export default class Main extends Component {
         <ClearReposButton onClick={this.handleClearStorage}>
           Limpar Repositórios
         </ClearReposButton>
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.handleSubmit} error={error}>
           <input
             type="text"
             placeholder="Adicione um repositório"
